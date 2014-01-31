@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Scala Overview</title>
+
+		<meta name="description" content="A short presentation introducing Scala to the world.">
+		<meta name="author" content="Félix-Étienne Trépanier">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/beige.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="plugin/highlight/styles/railscasts.css">
+
+		<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+		<script>
+			document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Scala Introduction</h1>
+					<h3>A quick overview of Scala</h3>
+					<p>
+						<small>Created by <a href="http://github.com/coderunner">Félix-Étienne Trépanier</a> / <a href="http://twitter.com/felixtrepanier">@felixtrepanier</a></small>
+					</p>
+
+					<aside class="notes">
+						<ol>
+							<li>This is an introduction presentation.</li>
+							<li>I will not go in depth and will move quicky.</li>
+							<li>I want give you a quick overview so you can ask questions.</li>
+							<li>Stop me anytime, I can elaborate on some features with more examples.</li>
+						</ol>
+					</aside>
+				</section>
+
+				<section>
+					<h2>Agenda</h2>
+					<ol>
+						<li>Scala Basics</li>
+						<li>Object-Oriented Language Constructs</li>
+						<li>Functional Programming Language Constructs</li>
+						<li>Typesafe Reactive Platform</li>
+					</ol>
+				</section>
+
+				<section>
+					<h1>Scala Basics</h1>
+				</section>
+
+				<section>
+					<h2>What Is Scala?</h2>
+					<ul>
+						<li>Statically Typed (with type inference)</li>
+						<li>Compiled to Java bytecode</li>
+						<li>Java Scala Interoperability</li>
+						<li>Runs on the JVM!</li>
+						<li>Object-Oriented</li>
+						<li>Functional</li>
+						<li>Rich Type System</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Basic Syntax</h2>
+					<pre><code data-trim contenteditable>
+val value: Int = 9
+
+var variable = 5
+variable = variable + 5
+
+val isEven = if (Random.nextInt(10) % 2 == 0) {
+  true
+} else {
+  false
+}
+
+val values = for (i <- 1 to 10) yield i
+
+def f(param: String): Boolean = {
+  param.startsWith("f")
+}
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>Scala syntax is flexible.</li>
+							<li>Scalable Language, a few language keywords -> extensions seen as part of the language.</li>
+							<li>No semi-column, some syntax elements are optional -> shorter code, DSL support</li>
+							<li>val and var! -> express intent</li>
+							<li>Type annotation is after the identifier name and optional -> less noisy if obvious, but good practice to specify it</li>
+							<li>Everything is an expression -> no return, shorter code, fits well with val model</li>
+						</ol>
+					</aside>
+				</section>
+
+				<section>
+					<h1>Object-Oriented Constructs</h1>
+				</section>
+
+				<section>
+					<h2>Classes</h2>
+					<pre><code data-trim contenteditable>
+class Message(source: String, content: String) {
+    require(!source.isEmpty)
+    private val isEmpty = source.isEmpty
+
+    def this(source: String) {
+      this(source, "")
+    }
+
+    def send(destination: String): Ack = {
+      ???
+    }
+
+    private def encodeMessage(content: String): Array[Byte] = {
+      ???
+    }
+}
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>Constructor parameters in the class definition (similar to function arguments).</li>
+							<li>Constructor's body is the body of the class!</li>
+							<li>Can create more constructors, but they need to call the primary constructor at the end of the chain.</li>
+							<li>Similar access modifier that Java (public, protected, private, private[this], private[package]).</li>
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h2>Abstract Classes</h2>
+					<pre><code data-trim contenteditable>
+abstract class Message(protected val source: String,
+                       protected val content: String) {
+    protected val encodedContent: Array[Byte]
+    def send(destination: String): Ack
+}
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>Very similar to abstract class in Java.</li>
+							<li>A class can only extends one abtract class.</li>
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h2>Traits</h2>
+					<pre><code data-trim contenteditable>
+trait Sendable {
+    def send(): Ack
+}
+
+trait Logging {
+    protected val logger = Logger.getLogger(this.getClass)
+    protected def info(message: String) = logger.info(message)
+}
+
+class SendableMessage(source: String, content: String) 
+  extends AbstractMessage with Sendable with Logging {
+    def send(): Ack = {
+      logger.info("sending")
+      ???
+    }
+}
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>This is powerful stuff!</li>
+							<li>Can be used to model an interface.</li>
+							<li>But can have behavior!</li>
+							<li>Classes can extends many traits.</li>
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h2>Objects</h2>
+					<pre><code data-trim contenteditable>
+object MailSender extends Sender {
+    def send(message: Message): Ack = {
+      ???
+    }
+}
+
+MailSender.send(...)
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>object are singleton, lazy initialized.</li>
+							<li>Home for static methods.</li>
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h2>Companion Objects</h2>
+					<pre><code data-trim contenteditable>
+class Hello(helloWhat: String) {
+      def say(): Unit = println(Hello.HELLO + " " + helloWhat)
+}
+
+object Hello {
+      private val HELLO = "hello"
+      def helloWorld(): Unit = new Hello("world").say()
+}
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>Companions object share the name of the class (defined in the same file).</li>
+							<li>Home for static methods, can access private members.</li>
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h2>Case Classes</h2>
+					<pre><code data-trim contenteditable>
+case class User(name: String, age: Int)
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>Equivalent of beans...but much shorter.</li>
+							<li>Get getters, (setters), equals, hashcode and extractors for free!</li>
+						</ol>
+					</aside>
+				</section>
+
+				<section>
+					<h1>Functional Constructs</h1>
+					<aside class="notes">
+						<ol>
+							<li>Functional Programming...programming with functions as computation units.</li>
+							<li>Pure function, no side effects.</li>
+							<li>Immutability.</li>
+							<li>Stateless.</li>
+							<li>Great for parallelism, testing and reasoning.</li>
+							<li>Compose easily and favor declarative style.</li> 
+						</ol>
+					</aside>
+				</section>
+
+				<section>
+					<h2>Functions!</h2>
+					<pre><code data-trim contenteditable>
+def isEven(value: Int): boolean = {
+	(value % 2) == 0
+}
+val list = List(1,2,3)
+list.filter(isEven)
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>Functions that take functions!</li> 
+						</ol>
+					</aside>
+				</section>
+<section>
+					<h2>Recursion</h2>
+					<pre><code data-trim contenteditable>
+@tailrec
+def findFirst(predicate: (Int) => Boolean, list: List[Int]): Option[Int] = {
+  if (list.isEmpty) {
+    None
+  } else if (predicate(list.head)) {
+    Some(list.head)
+  } else {
+    findFirst(predicate, list.tail)
+  }
+}
+
+findFirst(isEven, List(3, 5, 7, 9, 2, 4))
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>Functions that calls itself.</li>							
+							<li>Tailrec to avoid stack overflow.</li> 
+							<li>Can create concise and elegant code.</li> 
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h2>Currying</h2>
+					<pre><code data-trim contenteditable>
+def findFirst(predicate: (Int) => Boolean, list: List[Int]): Option[Int]
+def isEven(value: Int): boolean
+
+def findFirstEven: (List[Int]) => Option[Int] = findFirst(isEven, _)
+
+findFirstEven(List(3, 5, 7, 8, 0))
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>Function factories :)</li>							
+							<li>Creates a new function where some of the arguments are bound to specific values.</li> 
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h2>Pattern Matching</h2>
+					<pre><code data-trim contenteditable>
+@tailrec
+def findFirst(predicate: (Int) => Boolean, list: List[Int]): Option[Int] = {
+  list match {
+    case Nil => None
+    case head :: _ if predicate(head) => Some(head)
+    case _ :: tail => findFirst(predicate, tail)
+  }
+}
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>Much better switch/case.</li>							
+							<li>Can switch on types (no instanceOf).</li> 
+							<li>Can leverage Scala extractors -> example with case class.</li>
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h2>Lazyness & Call by name</h2>
+					<pre><code data-trim contenteditable>
+class Spaceship(name: String) {
+  lazy val engine = EngineCreator.createEngine()
+ 
+  def fly() {
+    engine.start()
+  }
+}
+
+def time(block: => Unit): Long = {
+  val start = System.currentTimeMillis()
+  block
+  System.currentTimeMillis() - start
+}
+println(time({
+  Thread.sleep(1000)
+}))
+					</code></pre>
+					<aside class="notes">
+						<ol>
+							<li>lazy is thread-safe lazy initialization of values.</li>							
+							<li>call by name, allows to pass arbitrary block of code that may or may not be executed.</li> 
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h2>Immutable Data Structures</h2>
+					<ul>
+						<li>Scala default collections are immutable.</li>
+						<li>Modifying an immutable collection results in a new collection, this makes the collections thread-safe.</li>
+						<li>Structural sharing makes it perform well.</li>
+					</ul>
+					<aside class="notes">
+						<ol>
+							<li>List as cons cells.</li>							
+						</ol>
+					</aside>
+				</section>
+				<section>
+					<h1>Typesafe Reactive Platform</h1>
+				</section>
+
+				<section>
+					<h2>Tools and Frameworks</h2>
+						<ul>
+							<li>Scala</li>
+							<li>sbt</li>
+							<li>Slick</li>
+							<li>Play!</li>
+							<li>Akka</li>
+						</ul>
+						<p></p>
+						<p><small><a href="http://typesafe.com/platform">http://typesafe.com/platform</a></small></p>
+				</section>
+
+				<section>
+					<h2>Play!</h2>
+					<ul>
+						<li>High productivity web framework (MVC based)</li>
+						<li>APIs in Java and in Scala</li>
+						<li>Support non-blocking calls and streaming</li>
+						<li>Support code auto-reload</li>
+					</ul>
+					<aside class="notes">
+						<ol>
+							<li>Play! demo! build a quick JSON and HTML view of records.</li>							
+						</ol>
+					</aside>
+				</section>
+
+				<section>
+					<h2>Akka</h2>
+					<ol>
+						<li>Toolkit for distributed and concurrent computation</li>
+						<li>APIs in Java and in Scala</li>
+						<li>Based on the Actor model</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Actors</h2>
+					<ol>
+						<li>Can only communicate with an actor by passing messages</li>
+						<li>Message are serialized so actor's state can't  be modified concurrently</li>
+						<li>Backed by mailbox and shared threadpool</li>
+						<li>Location transparent</li>
+						<li>Parental supervision</li>		
+					</ol>
+				</section>
+				
+				<section>
+					<h2>Getting Started!</h2>
+					<p>
+						Some resources to get started with Scala and Typesafe Platform.
+					</p>
+					<ul>
+						<li><a href="http://typesafe.com/platform/getstarted">Typesafe Acticator</a></li>
+						<li><a href="http://horstmann.com/scala/">Scala for the Impatient</a></li>
+						<li><a href="http://www.artima.com/shop/programming_in_scala_2ed">Programming in Scala</a></li>
+						<li><a href="https://www.coursera.org/course/progfun">Coursera: Functional Programming Principles in Scala</a></li>
+						<li><a href="https://www.coursera.org/course/reactive">Coursera: Principles of Reactive Programming</a></li>
+					</ul>
+				</section>
+
+				<section>
+					<h1>Questions?</h1>
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.pack.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
